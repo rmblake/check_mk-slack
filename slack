@@ -1,0 +1,111 @@
+#!/usr/bin/python
+# OMD-Slack Websocket integration
+# Rob M-B 2015
+# The emoji stuff could be done better, I know
+
+import os, sys
+import httplib
+import json
+
+
+#edit these variables 
+# - slack_path is the JSON payload url Path for the incoming webhook 
+#    1) create an incoming webhook on the integrations page, 
+#    2) paste in the path (minus 'http://hooks.slack.com' as the variable below.
+#
+# - Channel is the channel you want your bot to post in
+# - Bot name is changeable if you want to give the script a friendlier name. No spaces. 
+
+
+slack_path = "/services/API/KEY"
+channel = "#monitoring"
+bot_name = "CMKBot"
+
+
+
+# Probably better to leave the stuff below well alone
+
+slack_domain = "hooks.slack.com"
+headers = {"Content-type": "application/json", "Accept": "text/plain"}
+message = "*" + os.environ['NOTIFY_NOTIFICATIONTYPE'] + "* "
+plaintext = message
+message += "\n" + os.environ['NOTIFY_HOSTNAME'] + " "
+plaintest += os.environ['NOTIFY_HOSTNAME'] + " "
+
+
+# here lies service actions
+if os.environ['NOTIFY_WHAT'] == 'SERVICE':
+    message += "  " + os.environ['NOTIFY_SERVICEDESC'] + " is *"
+    plaintext += os.environ['NOTIFY_SERVICEDESC'] + " - *"
+    message += os.environ['NOTIFY_SERVICESTATE'] + "* \n`"
+    message += os.environ['NOTIFY_SERVICEOUTPUT'] + "` \n"
+    message += os.environ['NOTIFY_SERVICEACKCOMMENT']
+    plaintext += os.environ['NOTIFY_SERVICESTATE'] + "* - "
+    plaintext += os.environ['NOTIFY_SERVICEOUTPUT']
+    if os.environ['NOTIFY_NOTIFICATIONAUTHOR'] != '':
+      message += "\nTriggered by *" + os.environ['NOTIFY_NOTIFICATIONAUTHOR'] + "* - _" + os.environ['NOTIFY_NOTIFICATIONCOMMENT']  + "_"
+    if os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'DOWNTIMESTART':
+      emoji = ":moon:"
+      colour = "#439FE0"
+    elif os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'DOWNTIMEEND':
+      emoji = ":sunrise:"
+      colour = "#33cccc"
+    elif os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'ACKNOWLEDGEMENT':
+      emoji = ":flags:"
+      colour = "#8f006b"
+      plaintext += " - " + os.environ['NOTIFY_SERVICEACKCOMMENT']
+    elif os.environ['NOTIFY_SERVICESTATE'] ==  'CRITICAL':
+      emoji = ":fire:"
+      colour = "danger"
+    elif os.environ['NOTIFY_SERVICESTATE'] ==  'WARNING':
+      emoji = ":warning:"
+      colour = "warning"
+    elif os.environ['NOTIFY_SERVICESTATE'] ==  'UNKNOWN':
+      emoji = ":question:"
+      colour = "#cccccc"
+    elif os.environ['NOTIFY_SERVICESTATE'] ==  'OK':
+      emoji = ":ok:"
+      colour = "good"
+    else:
+      emoji = ":octocat:"
+
+#otherwise, it's a host
+else:
+    message += "is *" + os.environ['NOTIFY_HOSTSTATE'] + "* "
+    plaintext += "is *" + os.environ['NOTIFY_HOSTSTATE'] + "* - "
+    message += os.environ['NOTIFY_HOSTACKCOMMENT']
+    if os.environ['NOTIFY_NOTIFICATIONAUTHOR'] != '':
+      message += "\nTriggered by *" + os.environ['NOTIFY_NOTIFICATIONAUTHOR'] + "* - _" + os.environ['NOTIFY_NOTIFICATIONAUTHOR']  + "_"
+    if os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'DOWNTIMESTART':
+      emoji = ":moon:"
+      colour = "#439FE0"
+    elif os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'DOWNTIMEEND':
+      emoji = ":sunrise:"
+      colour = "#33cccc"
+    elif os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'ACKNOWLEDGEMENT':
+      emoji = ":flags:"
+      colour = "#8f006b"
+    elif os.environ['NOTIFY_HOSTSTATE'] ==  'DOWN':     
+      emoji = ":fire:"
+      colour = "danger"
+    elif os.environ['NOTIFY_HOSTSTATE'] ==  'WARNING':
+      emoji = ":warning:"
+      colour = "warning"
+    elif os.environ['NOTIFY_HOSTSTATE'] ==  'UNKNOWN':
+      emoji = ":question:"
+      colour = "#cccccc"
+    elif os.environ['NOTIFY_HOSTSTATE'] ==  'UP':
+      emoji = ":ok:"
+      colour = "good"
+    else:
+      emoji = ":octocat:"
+
+#and this is us flinging off the message
+conn = httplib.HTTPSConnection(slack_domain)
+attachment = { "fallback": plaintext, "color": colour,  "text":  message, "mrkdwn_in": ["text"]}
+data = {"channel": channel, "username": bot_name, "attachments": [attachment], "icon_emoji": emoji}
+conn.request("POST", slack_path, json.dumps(data), headers)
+response = conn.getresponse()
+conn.close()
+
+print(response.read())
