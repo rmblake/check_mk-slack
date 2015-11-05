@@ -30,7 +30,7 @@ headers = {"Content-type": "application/json", "Accept": "text/plain"}
 message = "*" + os.environ['NOTIFY_NOTIFICATIONTYPE'] + "* "
 plaintext = message
 message += "\n" + os.environ['NOTIFY_HOSTNAME'] + " "
-plaintest += os.environ['NOTIFY_HOSTNAME'] + " "
+plaintext += os.environ['NOTIFY_HOSTNAME'] + " "
 
 
 # here lies service actions
