@@ -18,7 +18,9 @@ import json
 
 
 slack_path = "/services/API/KEY"
-channel = "#monitoring"
+channel = "#" + os.environ['NOTIFY_PARAMETER_1']
+if not channel:
+	channel = '#monitoring'
 bot_name = "CMKBot"
 
 

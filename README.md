@@ -16,6 +16,7 @@ sure that the script is executable (chmod +x slack)
 
 3) Create a user for slack in WATO, use flexible custom notifications and select 'CMK-Slack Websocket integration' as the notifier.
 
+Select option "Call with the following parameters" and set your channel without "#". If you leave the parameter box in blank the channel takes "#monitoring" value.
 4) Wait for something to send an alert or generate a test 
 alert.
 
