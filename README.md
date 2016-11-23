@@ -1,4 +1,4 @@
-<# Check_mk notification script for Slack
+# Check_mk notification script for Slack
 
 ## Introduction
 
