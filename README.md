@@ -1,4 +1,4 @@
-# Check_mk notification script for Slack
+<# Check_mk notification script for Slack
 
 ## Introduction
 
@@ -32,19 +32,20 @@ been explicitly disabled.
 ### Test it
 
 if you want to test if you have configured the slack script correcty you can try:
+```
 export NOTIFY_PARAMETER_1=dennis-test
 export NOTIFY_HOSTNAME=TestHost
 export NOTIFY_WHAT=""
 export NOTIFY_HOSTACKCOMMENT=false
 export NOTIFY_NOTIFICATIONAUTHOR=""
 export NOTIFY_HOSTSTATE=DOWN
-
+```
 ### Mattermost
 
 To use it with the opensource alternative mattermost run those settings:
 
 your api key url
-slack_path = "/hooks/kderbmy7yjrr9p9qfwzto374sr"
+`slack_path = "/hooks/kderbmy7yjrr9p9qfwzto374sr"`
 
 your mattermost domain
-slack_domain = "mattermost.example.com"
+`slack_domain = "mattermost.example.com"`
