@@ -18,7 +18,6 @@ import json
 
 
 slack_path = "/services/API/KEY"
-channel = "#" + os.environ['NOTIFY_PARAMETER_1']
 if "NOTIFY_PARAMETER_1" in os.environ:
     channel = "#" + os.environ['NOTIFY_PARAMETER_1']
 else:
