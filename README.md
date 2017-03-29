@@ -28,6 +28,7 @@ releases), I assume it doesn't work. Where it has been used
 bulk notification setups, bulking for the slack script has 
 been explicitly disabled.
 
+Requires "requests", so `apt-get install python-requests` or `pip install requests`
 
 ### Test it
 
@@ -39,6 +40,7 @@ export NOTIFY_WHAT=""
 export NOTIFY_HOSTACKCOMMENT=false
 export NOTIFY_NOTIFICATIONAUTHOR=""
 export NOTIFY_HOSTSTATE=DOWN
+export NOTIFY_NOTIFICATIONTYPE="WARNING"
 ```
 ### Mattermost
 
