@@ -99,7 +99,7 @@ else:
     plaintext += "is *" + os.environ['NOTIFY_HOSTSTATE'] + "* - "
     message += os.environ['NOTIFY_HOSTACKCOMMENT']
     if os.environ['NOTIFY_NOTIFICATIONAUTHOR'] != '':
-        message += "\nTriggered by *" + os.environ['NOTIFY_NOTIFICATIONAUTHOR'] + "* - _" + os.environ['NOTIFY_NOTIFICATIONAUTHOR']  + "_"
+        message += "\nTriggered by *" + os.environ['NOTIFY_NOTIFICATIONAUTHOR'] + "* - _" + os.environ['NOTIFY_NOTIFICATIONCOMMENT']  + "_"
 
 event_style = event_style()
 
