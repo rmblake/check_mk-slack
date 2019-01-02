@@ -14,6 +14,7 @@ import json
 #
 # - Channel is the channel you want your bot to post in
 # - Bot name is changeable if you want to give the script a friendlier name. No spaces.
+# - uncomment 'proxies' if you wish to use a proxy server (thanks to Chris F. for proxy support)
 
 
 slack_path = "/services/API/KEY"
@@ -23,10 +24,10 @@ else:
     channel = '#monitoring'
 bot_name = "CMKBot"
 
-proxies = {
-           "http"  : "http://proxy:3128",
-           "https" : "http://proxy:3128"
-          }
+#proxies = {
+#          "http"  : "http://proxy:3128",
+#          "https" : "http://proxy:3128"
+#          }
 
 
 # Probably better to leave the stuff below well alone
