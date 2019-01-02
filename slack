@@ -7,14 +7,13 @@ import os, sys
 import requests
 import json
 
-
-#edit these variables 
-# - slack_path is the JSON payload url Path for the incoming webhook 
-#    1) create an incoming webhook on the integrations page, 
+#edit these variables
+# - slack_path is the JSON payload url Path for the incoming webhook
+#    1) create an incoming webhook on the integrations page,
 #    2) paste in the path (minus 'http://hooks.slack.com' as the variable below.
 #
 # - Channel is the channel you want your bot to post in
-# - Bot name is changeable if you want to give the script a friendlier name. No spaces. 
+# - Bot name is changeable if you want to give the script a friendlier name. No spaces.
 
 
 slack_path = "/services/API/KEY"
@@ -39,6 +38,45 @@ plaintext = message
 message += "\n" + os.environ['NOTIFY_HOSTNAME'] + " "
 plaintext += os.environ['NOTIFY_HOSTNAME'] + " "
 
+## for now avoid separate styles for notifications services or hosts. though they would make the code more correct (service in styles etc.)
+color_emoji_json = """{
+    "_comment": "NOTIFY_NOTIFICATIONTYPE",
+    "DOWNTIMESTART": { "color": "#439FE0", "emoji": ":moon:" },
+    "DOWNTIMEEND": { "color": "#33cccc", "emoji": ":sunrise:" },
+    "ACKNOWLEDGEMENT": { "color": "#8f006b", "emoji": ":flags:" },
+    "_comment": "NOTIFY_SERVICESTATE",
+    "CRITICAL": { "color": "danger", "emoji": ":fire:" },
+    "WARNING": { "color": "warning", "emoji": ":warning:" },
+    "UNKNOWN": { "color": "#cccccc", "emoji": ":question:" },
+    "OK": { "color": "good", "emoji": ":ok:" },
+    "_comment": "NOTIFY_HOSTSTATE warning and unknown already defined will reuse for consistence",
+    "DOWN": { "color": "danger", "emoji": ":fire:" },
+    "UP": { "color": "good", "emoji": ":ok:" },
+    "_comment": "when we can not find a matching style",
+    "praseerror": { "color": "#aaaaaa", "emoji": ":octocat:" }
+}"""
+
+def event_style():
+    styles = json.loads(color_emoji_json)
+    if 'NOTIFY_NOTIFICATIONTYPE' in os.environ:
+        if os.environ['NOTIFY_NOTIFICATIONTYPE'] in styles: return styles[os.environ['NOTIFY_NOTIFICATIONTYPE']]
+    else: return styles['parseerror'] ## error missing NOTIFY_NOTIFICATIONTYPE
+    if 'NOTIFY_WHAT' in os.environ:
+        if os.environ['NOTIFY_WHAT'] == 'SERVICE':
+            if 'NOTIFY_SERVICESTATE' in os.environ:
+                if os.environ['NOTIFY_SERVICESTATE'] in styles: return styles[os.environ['NOTIFY_SERVICESTATE']]
+                else: return styles['parseerror'] ## error unknown NOTIFY_SERVICESTATE
+            else: return styles['parseerror'] ## error missing NOTIFY_SERVICESTATE
+        else: ## assuming host
+            if 'NOTIFY_HOSTSTATE' in os.environ:
+                if os.environ['NOTIFY_HOSTSTATE'] in styles: return styles[os.environ['NOTIFY_HOSTSTATE']]
+                else: return styles['parseerror'] ## error unknown NOTIFY_HOSTSTATE
+            else: return styles['parseerror'] ## error missing NOTIFY_SERVICESTATE
+    else: return styles['parseerror'] ## error missing NOTIFY_WHAT
+
+    ## should never get here but better to send a message than miss due to lack of style
+    return styles['parseerror']
+
 
 # here lies service actions
 if os.environ['NOTIFY_WHAT'] == 'SERVICE':
@@ -50,31 +88,9 @@ if os.environ['NOTIFY_WHAT'] == 'SERVICE':
     plaintext += os.environ['NOTIFY_SERVICESTATE'] + "* - "
     plaintext += os.environ['NOTIFY_SERVICEOUTPUT']
     if os.environ['NOTIFY_NOTIFICATIONAUTHOR'] != '':
-      message += "\nTriggered by *" + os.environ['NOTIFY_NOTIFICATIONAUTHOR'] + "* - _" + os.environ['NOTIFY_NOTIFICATIONCOMMENT']  + "_"
-    if os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'DOWNTIMESTART':
-      emoji = ":moon:"
-      colour = "#439FE0"
-    elif os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'DOWNTIMEEND':
-      emoji = ":sunrise:"
-      colour = "#33cccc"
-    elif os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'ACKNOWLEDGEMENT':
-      emoji = ":flags:"
-      colour = "#8f006b"
-      plaintext += " - " + os.environ['NOTIFY_SERVICEACKCOMMENT']
-    elif os.environ['NOTIFY_SERVICESTATE'] ==  'CRITICAL':
-      emoji = ":fire:"
-      colour = "danger"
-    elif os.environ['NOTIFY_SERVICESTATE'] ==  'WARNING':
-      emoji = ":warning:"
-      colour = "warning"
-    elif os.environ['NOTIFY_SERVICESTATE'] ==  'UNKNOWN':
-      emoji = ":question:"
-      colour = "#cccccc"
-    elif os.environ['NOTIFY_SERVICESTATE'] ==  'OK':
-      emoji = ":ok:"
-      colour = "good"
-    else:
-      emoji = ":octocat:"
+        message += "\nTriggered by *" + os.environ['NOTIFY_NOTIFICATIONAUTHOR'] + "* - _" + os.environ['NOTIFY_NOTIFICATIONCOMMENT']  + "_"
+    if os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'ACKNOWLEDGEMENT':
+        plaintext += " - " + os.environ['NOTIFY_SERVICEACKCOMMENT']
 
 #otherwise, it's a host
 else:
@@ -82,34 +98,14 @@ else:
     plaintext += "is *" + os.environ['NOTIFY_HOSTSTATE'] + "* - "
     message += os.environ['NOTIFY_HOSTACKCOMMENT']
     if os.environ['NOTIFY_NOTIFICATIONAUTHOR'] != '':
-      message += "\nTriggered by *" + os.environ['NOTIFY_NOTIFICATIONAUTHOR'] + "* - _" + os.environ['NOTIFY_NOTIFICATIONAUTHOR']  + "_"
-    if os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'DOWNTIMESTART':
-      emoji = ":moon:"
-      colour = "#439FE0"
-    elif os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'DOWNTIMEEND':
-      emoji = ":sunrise:"
-      colour = "#33cccc"
-    elif os.environ['NOTIFY_NOTIFICATIONTYPE'] == 'ACKNOWLEDGEMENT':
-      emoji = ":flags:"
-      colour = "#8f006b"
-    elif os.environ['NOTIFY_HOSTSTATE'] ==  'DOWN':     
-      emoji = ":fire:"
-      colour = "danger"
-    elif os.environ['NOTIFY_HOSTSTATE'] ==  'WARNING':
-      emoji = ":warning:"
-      colour = "warning"
-    elif os.environ['NOTIFY_HOSTSTATE'] ==  'UNKNOWN':
-      emoji = ":question:"
-      colour = "#cccccc"
-    elif os.environ['NOTIFY_HOSTSTATE'] ==  'UP':
-      emoji = ":ok:"
-      colour = "good"
-    else:
-      emoji = ":octocat:"
+        message += "\nTriggered by *" + os.environ['NOTIFY_NOTIFICATIONAUTHOR'] + "* - _" + os.environ['NOTIFY_NOTIFICATIONAUTHOR']  + "_"
+
+event_style = event_style()
 
 #and this is us flinging off the message
-attachment = { "fallback": plaintext, "color": colour,  "text":  message, "mrkdwn_in": ["text"]}
-data = {"channel": channel, "username": bot_name, "attachments": [attachment], "icon_emoji": emoji}
+attachment = { "fallback": plaintext, "color": event_style['color'],  "text":  message, "mrkdwn_in": ["text"]}
+data = {"channel": channel, "username": bot_name, "attachments": [attachment], "icon_emoji": event_style['emoji']}
+
 conn = requests.post(slack_domain+slack_path,data = json.dumps(data), proxies=proxies)
 
 print(conn.status_code)
