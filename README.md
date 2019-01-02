@@ -2,6 +2,8 @@
 
 ## Introduction
 
+_Update 2019-01-02 - Due to no longer working in a check_mk/slack environment I'm not best placed to maintain this - as of this update this script still works AFAIK, but I won't be able to accept any commits/updates going forward unless I land myself back in a similar environment!_
+
 This is a script designed to bounce Check_MK/OMD notifications 
 into a Slack Channel, using Slacks Incoming Webhooks API.
 
@@ -14,11 +16,13 @@ into a Slack Channel, using Slacks Incoming Webhooks API.
 edit configuration variables in the 'slack' script, and make 
 sure that the script is executable (chmod +x slack)
 
-3) Create a user for slack in WATO, use flexible custom notifications and select 'CMK-Slack Websocket integration' as the notifier.
+3) Restart OMD/Check MK with 'omd restart' or 'cmk -R'
+
+4) Create a user for slack in WATO, use flexible custom notifications and select 'CMK-Slack Websocket integration' as the notifier.
 
 Select option "Call with the following parameters" and set your channel without "#". If you leave the parameter box in blank the channel takes "#monitoring" value.
 
-4) Wait for something to send an alert or generate a test 
+5) Wait for something to send an alert or generate a test 
 alert.
 
 ## Good to know
