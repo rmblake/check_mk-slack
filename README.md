@@ -12,7 +12,7 @@ into a Slack Channel, using Slacks Incoming Webhooks API.
 1) Create an incoming webhook integration in your slack and note down the URL.
 
 2) Put into /usr/(local/)share/check_mk/notifications (or 
-~/share/check_mk/notifications on OMD installs) directory and 
+~/share/check_mk/notifications on OMD/newer check_mk installs) directory and 
 edit configuration variables in the 'slack' script, and make 
 sure that the script is executable (chmod +x slack)
 
